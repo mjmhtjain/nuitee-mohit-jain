@@ -130,10 +130,8 @@ func (h *HotelsHandler) SearchHotels() gin.HandlerFunc {
 		}
 
 		response := dto.HotelPriceResponse{
-			Data: serviceResponse.Data,
-			Supplier: dto.Supplier{
-				Request: serviceResponse.SupplierRequest,
-			},
+			Data:     serviceResponse,
+			Supplier: dto.Supplier{},
 		}
 
 		// return response
