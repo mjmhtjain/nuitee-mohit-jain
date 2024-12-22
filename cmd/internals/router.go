@@ -4,17 +4,14 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/mjmhtjain/nuitee-mohit-jain/cmd/internals/handler"
 )
 
 func Router() *gin.Engine {
 	router := gin.Default()
 
 	// Define a simple GET endpoint
-	router.GET("/health", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{
-			"message": "healthy",
-		})
-	})
+	router.GET("/health", handler.NewHealthHandler().Handle())
 
 	// Define a route group for API endpoints
 	api := router.Group("/api")
