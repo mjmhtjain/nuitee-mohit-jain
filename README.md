@@ -21,46 +21,53 @@ This project implements an API using the Gin framework in Golang that serves as 
    - Include both request and response data in final output
    - Maintain data exchange transparency
 
-## API Credentials
-
-### Hotelbeds API
-- **API Key**: `db11033c50b5ed53ab7b815cb1b2eaee`
-- **Secret**: `704773c03`
-
 ## Documentation
 - Hotelbeds API Documentation: [Hotels Booking API](https://developer.hotelbeds.com/documentation/hotels/booking-api/)
 
 ## Setup and Testing
 1. Clone the repository
-2. Install dependencies:
+
+2. Set up environment variables by creating a `.env` file in the root directory:
+   ```env
+   HOTELBEDS_API_KEY=your_api_key_here
+   HOTELBEDS_API_SECRET=your_api_secret_here
+   PORT=8080  # Optional, defaults to 8080
+   ```
+
+3. Install dependencies:
    ```bash
    go mod tidy
    ```
-3. Run the application:
+
+4. Run tests:
+   ```bash
+   go test ./...
+   ```
+
+5. Run the application:
    ```bash
    go run main.go
    ```
 
-## Project Timeline
-- Development time: 12 hours
-- Submission: GitHub repository with complete source code and documentation
+   The API will be available at `http://localhost:8080` (or your configured PORT)
 
 ## Repository Structure
 ```
 .
-├── README.md
-├── go.mod
-├── main.go
-└── [other project files]
+├── .env                    # Environment configuration
+├── .gitignore             # Git ignore rules
+├── README.md              # Project documentation
+├── go.mod                 # Go module definition
+├── go.sum                 # Go module checksums
+├── main.go                # Application entry point
+├── main_test.go          # Main package tests
+├── scripts/              # Utility scripts
+└── cmd/                  # Application source code
+    └── internals/        # Internal packages
+        ├── handler/      # HTTP request handlers
+        ├── service/      # Business logic layer
+        ├── dto/          # Data transfer objects
+        ├── client/       # External API clients
+        └── router/       # Route definitions
 ```
 
-## Testing
-- A Postman collection is provided for testing the API endpoints
-- The collection includes example requests and expected response formats
-
-## Guidelines for Contribution
-1. Ensure code is well-documented
-2. Follow Go best practices
-3. Include appropriate error handling
-4. Write clean, maintainable code
-5. Add necessary comments for complex logic

@@ -10,6 +10,7 @@ type Router struct {
 }
 
 func (r *Router) Setup() *gin.Engine {
+
 	// Health endpoint
 	r.engine.GET("/health", handler.NewHealthHandler().Handle())
 
