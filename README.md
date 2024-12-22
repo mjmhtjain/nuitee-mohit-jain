@@ -29,9 +29,10 @@ This project implements an API using the Gin framework in Golang that serves as 
 
 2. Set up environment variables by creating a `.env` file in the root directory:
    ```env
+   HOTEL_BEDS_BASE_URL=https://api.test.hotelbeds.com
    HOTELBEDS_API_KEY=your_api_key_here
    HOTELBEDS_API_SECRET=your_api_secret_here
-   PORT=8080  # Optional, defaults to 8080
+   PORT=8080 
    ```
 
 3. Install dependencies:
