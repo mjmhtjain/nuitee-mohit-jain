@@ -10,13 +10,11 @@ type Router struct {
 }
 
 func (r *Router) Setup() *gin.Engine {
-	hotelsHandler := handler.NewHotelsHandler()
-
 	// Health endpoint
 	r.engine.GET("/health", handler.NewHealthHandler().Handle())
 
 	// hotels GET endpoint
-	r.engine.GET("/hotels", hotelsHandler.SearchHotels())
+	r.engine.GET("/hotels", handler.NewHotelsHandler().SearchHotels())
 
 	return r.engine
 }

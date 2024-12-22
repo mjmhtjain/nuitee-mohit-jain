@@ -1,7 +1,10 @@
 package handler
 
 import (
+	"encoding/json"
 	"net/http"
+	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/mjmhtjain/nuitee-mohit-jain/cmd/internals/dto"
@@ -13,7 +16,9 @@ type HotelsHandler struct {
 }
 
 func NewHotelsHandler() *HotelsHandler {
-	return &HotelsHandler{} // TODO Add dependency
+	return &HotelsHandler{
+		hotelService: service.NewHotelService(),
+	}
 }
 
 func (h *HotelsHandler) SearchHotels() gin.HandlerFunc {
@@ -29,9 +34,12 @@ func (h *HotelsHandler) SearchHotels() gin.HandlerFunc {
 		// Get the supplier config from header
 		supplierConfig := c.GetHeader("x-liteapi-supplier-config")
 		if supplierConfig == "" {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"error": "supplier config is required",
-			})
+			c.JSON(
+				http.StatusBadRequest,
+				gin.H{
+					"error": "supplier config is required",
+				},
+			)
 			return
 		}
 
@@ -43,7 +51,43 @@ func (h *HotelsHandler) SearchHotels() gin.HandlerFunc {
 		// 3. Make API calls to your hotel service
 		// 4. Process the response
 
-		hotels, err := h.hotelService.SearchHotels()
+		hotelIds := []int{}
+		occupancies := []dto.Occupancy{}
+
+		// Parse hotel IDs
+		for _, id := range strings.Split(query.HotelIds, ",") {
+			i, err := strconv.Atoi(id)
+			if err != nil {
+				c.JSON(
+					http.StatusBadRequest,
+					gin.H{
+						"error": "invalid hotel ID format",
+					},
+				)
+				return
+			}
+			hotelIds = append(hotelIds, i)
+		}
+
+		// Parse occupancies from query params
+		if err := json.Unmarshal([]byte(query.Occupancies), &occupancies); err != nil {
+			c.JSON(
+				http.StatusBadRequest,
+				gin.H{
+					"error": "invalid occupancies format",
+				},
+			)
+			return
+		}
+
+		serviceParams := dto.HotelSearchServiceParams{
+			CheckIn:     query.CheckIn,
+			CheckOut:    query.CheckOut,
+			HotelIDs:    hotelIds,
+			Occupancies: occupancies,
+		}
+
+		hotels, err := h.hotelService.SearchHotels(serviceParams)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"error": err.Error(),

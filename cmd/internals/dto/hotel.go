@@ -10,6 +10,14 @@ type HotelSearchQueryParams struct {
 	Occupancies      string `form:"occupancies" binding:"required"`
 }
 
+// HotelSearchServiceParams represents the request structure for HotelSearch Service
+type HotelSearchServiceParams struct {
+	CheckIn     string
+	CheckOut    string
+	HotelIDs    []int
+	Occupancies []Occupancy
+}
+
 // HotelPriceResponse represents the top-level response structure
 type HotelPriceResponse struct {
 	Data     []HotelPrice `json:"data"`
