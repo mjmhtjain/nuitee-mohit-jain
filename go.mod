@@ -1,4 +1,4 @@
-module github.com/mjmhtjain/nuitee-mohit-jain.git
+module github.com/mjmhtjain/nuitee-mohit-jain
 
 go 1.21
 
