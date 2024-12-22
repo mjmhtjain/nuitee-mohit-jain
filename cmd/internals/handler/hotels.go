@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/mjmhtjain/nuitee-mohit-jain/cmd/internals/dto"
@@ -31,6 +32,47 @@ func (h *HotelsHandler) SearchHotels() gin.HandlerFunc {
 			return
 		}
 
+		// Validate date format and values
+		checkIn, err := time.Parse("2006-01-02", query.CheckIn)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "check-in date must be in format YYYY-MM-DD",
+			})
+			return
+		}
+
+		checkOut, err := time.Parse("2006-01-02", query.CheckOut)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "check-out date must be in format YYYY-MM-DD",
+			})
+			return
+		}
+
+		// Check if dates are in the future
+		now := time.Now().Truncate(24 * time.Hour)
+		if checkIn.Before(now) {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "check-in date must be in the future",
+			})
+			return
+		}
+
+		if checkOut.Before(now) {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "check-out date must be in the future",
+			})
+			return
+		}
+
+		// Check if check-out is after check-in
+		if checkOut.Before(checkIn) || checkOut.Equal(checkIn) {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "check-out date must be after check-in date",
+			})
+			return
+		}
+
 		// Get the supplier config from header
 		supplierConfig := c.GetHeader("x-liteapi-supplier-config")
 		if supplierConfig == "" {
@@ -42,14 +84,6 @@ func (h *HotelsHandler) SearchHotels() gin.HandlerFunc {
 			)
 			return
 		}
-
-		// Here you would typically:
-		// 1. Parse the hotel IDs into a slice
-		// hotelIds := strings.Split(query.HotelIds, ",")
-
-		// 2. Parse the occupancies JSON string
-		// 3. Make API calls to your hotel service
-		// 4. Process the response
 
 		hotelIds := []int{}
 		occupancies := []dto.Occupancy{}
@@ -87,7 +121,7 @@ func (h *HotelsHandler) SearchHotels() gin.HandlerFunc {
 			Occupancies: occupancies,
 		}
 
-		hotels, err := h.hotelService.SearchHotels(serviceParams)
+		serviceResponse, err := h.hotelService.SearchHotels(serviceParams)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"error": err.Error(),
@@ -96,8 +130,10 @@ func (h *HotelsHandler) SearchHotels() gin.HandlerFunc {
 		}
 
 		response := dto.HotelPriceResponse{
-			Data:     hotels,
-			Supplier: dto.Supplier{},
+			Data: serviceResponse.Data,
+			Supplier: dto.Supplier{
+				Request: serviceResponse.SupplierRequest,
+			},
 		}
 
 		// return response
