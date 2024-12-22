@@ -9,9 +9,16 @@ type Router struct {
 	engine *gin.Engine
 }
 
-func (r *Router) Setup() {
+func (r *Router) Setup() *gin.Engine {
 	hotelsHandler := handler.NewHotelsHandler()
+
+	// Health endpoint
+	r.engine.GET("/health", handler.NewHealthHandler().Handle())
+
+	// hotels GET endpoint
 	r.engine.GET("/hotels", hotelsHandler.SearchHotels())
+
+	return r.engine
 }
 
 func NewRouter() *Router {

@@ -1,11 +1,11 @@
 package main
 
-import "github.com/mjmhtjain/nuitee-mohit-jain/cmd/internals"
+import "github.com/mjmhtjain/nuitee-mohit-jain/cmd/internals/router"
 
 func main() {
-	// Create a new Gin router with default middleware
-	router := internals.Router()
+	router := router.NewRouter().
+		Setup()
 
-	// Start the server on port 8080
+	// // Start the server on port 8080
 	router.Run(":8080")
 }
