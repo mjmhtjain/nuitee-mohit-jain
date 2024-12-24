@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -28,6 +29,7 @@ func TestSearchHotels(t *testing.T) {
 	checkoutBeforeCheckin := "hotelIds=1234,5678&checkin=2025-01-16&checkout=2025-01-11&occupancies=[{\"adults\":2,\"children\":1,\"childrenAges\":[10]}]"
 	invalidHotelID := "hotelIds=asdf,5678&checkin=2024-12-25&checkout=2024-12-26&occupancies=[{\"adults\":2,\"children\":1,\"childrenAges\":[10]}]"
 	invalidOccupancies := "hotelIds=1234,5678&checkin=2024-12-25&checkout=2024-12-26&occupancies=[{\":[10]}]"
+	downstreamErr := "hotelIds=9999,5678&checkin=2024-12-25&checkout=2024-12-26&occupancies=[{\"adults\":2,\"children\":1,\"childrenAges\":[10]}]"
 
 	tests := []struct {
 		name           string
@@ -84,6 +86,13 @@ func TestSearchHotels(t *testing.T) {
 			expectedCode:   http.StatusBadRequest,
 			expectedError:  "invalid occupancies format",
 		},
+		{
+			name:           "Service layer error",
+			queryParams:    downstreamErr,
+			supplierConfig: "test-supplier-config",
+			expectedCode:   http.StatusInternalServerError,
+			expectedError:  "service error",
+		},
 	}
 
 	for _, tt := range tests {
@@ -112,6 +121,11 @@ func TestSearchHotels(t *testing.T) {
 type mockHotelService struct{}
 
 func (m *mockHotelService) SearchHotels(params dto.HotelSearchServiceParams) ([]dto.HotelPrice, error) {
+	// Return error for specific hotel ID
+	if params.HotelIDs[0] == 9999 {
+		return nil, fmt.Errorf("service error")
+	}
+
 	if params.HotelIDs[0] == 1234 {
 		return []dto.HotelPrice{
 			{
