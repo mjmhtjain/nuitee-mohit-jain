@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/mjmhtjain/nuitee-mohit-jain/cmd/internals/dto"
+	"github.com/mjmhtjain/nuitee-mohit-jain/cmd/internals/util"
 )
 
 type HotelBedsClient interface {
@@ -94,11 +95,12 @@ func (c *HotelBedsClientImpl) setHeaders(req *http.Request) error {
 	if err != nil {
 		return err
 	}
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Api-key", c.apiKey)
-	req.Header.Set("X-Signature", signature)
-	req.Header.Set("Accept", "application/json")
-	req.Header.Set("Accept-Encoding", "gzip")
+
+	req.Header.Set(util.HeaderContentType, util.ValueApplicationJSON)
+	req.Header.Set(util.HeaderApiKey, c.apiKey)
+	req.Header.Set(util.HeaderSignature, signature)
+	req.Header.Set(util.HeaderAccept, util.ValueApplicationJSON)
+	req.Header.Set(util.HeaderAcceptEncoding, util.ValueGzip)
 
 	return nil
 }

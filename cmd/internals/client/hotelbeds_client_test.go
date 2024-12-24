@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/mjmhtjain/nuitee-mohit-jain/cmd/internals/dto"
+	"github.com/mjmhtjain/nuitee-mohit-jain/cmd/internals/util"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -30,11 +31,11 @@ func TestSearchHotels(t *testing.T) {
 	// Setup mock server
 	mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Verify request headers
-		assert.Equal(t, "application/json", r.Header.Get("Content-Type"))
-		assert.NotEmpty(t, r.Header.Get("Api-key"))
-		assert.NotEmpty(t, r.Header.Get("X-Signature"))
-		assert.Equal(t, "application/json", r.Header.Get("Accept"))
-		assert.Equal(t, "gzip", r.Header.Get("Accept-Encoding"))
+		assert.Equal(t, util.ValueApplicationJSON, r.Header.Get(util.HeaderContentType))
+		assert.NotEmpty(t, r.Header.Get(util.HeaderApiKey))
+		assert.NotEmpty(t, r.Header.Get(util.HeaderSignature))
+		assert.Equal(t, util.ValueApplicationJSON, r.Header.Get(util.HeaderAccept))
+		assert.Equal(t, util.ValueGzip, r.Header.Get(util.HeaderAcceptEncoding))
 
 		// Mock response
 		response := dto.HotelbedsResponse{
