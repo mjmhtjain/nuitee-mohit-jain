@@ -3,6 +3,7 @@ module github.com/mjmhtjain/nuitee-mohit-jain
 go 1.21
 
 require (
+	github.com/Rhymond/go-money v1.0.14
 	github.com/gin-gonic/gin v1.9.1
 	github.com/stretchr/testify v1.8.3
 )

@@ -15,6 +15,7 @@ type HotelSearchServiceParams struct {
 	CheckIn     string
 	CheckOut    string
 	HotelIDs    []int
+	Currency    string
 	Occupancies []Occupancy
 }
 

@@ -1,5 +1,10 @@
 package dto
 
+import (
+	"fmt"
+	"strconv"
+)
+
 type HotelbedsResponse struct {
 	Hotels Hotels `json:"hotels"`
 }
@@ -17,6 +22,20 @@ type Hotel struct {
 	MinRate  string `json:"minRate"`
 	MaxRate  string `json:"maxRate"`
 	Currency string `json:"currency"`
+}
+
+func (h *Hotel) GetStringifiedHotelCode() string {
+	return fmt.Sprint(h.Code)
+}
+
+func (h *Hotel) GetPrice() (float64, error) {
+	var price float64 = 0
+	price, err := strconv.ParseFloat(h.MinRate, 64)
+	if err != nil {
+		return price, fmt.Errorf("failed to parse MinRate: %w", err)
+	}
+
+	return price, nil
 }
 
 type HotelBedsSearchRequest struct {
