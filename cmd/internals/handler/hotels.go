@@ -123,9 +123,21 @@ func (h *HotelsHandler) handle(c *gin.Context) {
 		return
 	}
 
+	// Validate currency
+	if query.Currency == "" {
+		c.JSON(
+			http.StatusBadRequest,
+			gin.H{
+				"error": "currency is required",
+			},
+		)
+		return
+	}
+
 	serviceParams := dto.HotelSearchServiceParams{
 		CheckIn:     query.CheckIn,
 		CheckOut:    query.CheckOut,
+		Currency:    query.Currency,
 		HotelIDs:    hotelIds,
 		Occupancies: occupancies,
 	}
