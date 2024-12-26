@@ -9,7 +9,7 @@ import (
 )
 
 type HotelService interface {
-	SearchHotels(dto.HotelSearchServiceParams) ([]dto.HotelPrice, error)
+	SearchHotels(dto.HotelSearchServiceParams) (dto.HotelSearchServiceResponse, error)
 }
 
 type HotelServiceImpl struct {
@@ -24,8 +24,8 @@ func NewHotelService() HotelService {
 	}
 }
 
-func (h *HotelServiceImpl) SearchHotels(serviceParams dto.HotelSearchServiceParams) ([]dto.HotelPrice, error) {
-	res := []dto.HotelPrice{}
+func (h *HotelServiceImpl) SearchHotels(serviceParams dto.HotelSearchServiceParams) (dto.HotelSearchServiceResponse, error) {
+	result := dto.HotelSearchServiceResponse{}
 
 	//create request
 	request := dto.HotelBedsSearchRequest{
@@ -39,17 +39,23 @@ func (h *HotelServiceImpl) SearchHotels(serviceParams dto.HotelSearchServicePara
 		},
 	}
 
-	// get response from client
-	stringResponse, err := h.client.SearchHotels(&request)
+	// Convert request to JSON
+	byteRequest, err := json.Marshal(request)
 	if err != nil {
-		return nil, err
+		return result, fmt.Errorf("failed to marshal request: %w", err)
+	}
+
+	// get response from client
+	byteResponse, err := h.client.SearchHotels(byteRequest)
+	if err != nil {
+		return result, fmt.Errorf("failed to marshal response: %w", err)
 	}
 
 	// unmarshal response
 	response := dto.HotelbedsResponse{}
-	err = json.Unmarshal([]byte(*stringResponse), &response)
+	err = json.Unmarshal(byteResponse, &response)
 	if err != nil {
-		return nil, fmt.Errorf("failed to unmarshal response: %w", err)
+		return result, fmt.Errorf("failed to unmarshal response: %w", err)
 	}
 
 	// get price for each hotel
@@ -58,13 +64,13 @@ func (h *HotelServiceImpl) SearchHotels(serviceParams dto.HotelSearchServicePara
 
 		price, err = hotel.GetPrice()
 		if err != nil {
-			return nil, fmt.Errorf("failed to get Price for Hotel: %v", hotel.Code)
+			return result, fmt.Errorf("failed to get Price for Hotel: %v", hotel.Code)
 		}
 
 		if hotel.Currency != serviceParams.Currency {
 			price, err = h.currService.Convert(price, hotel.Currency, serviceParams.Currency)
 			if err != nil {
-				return nil, fmt.Errorf("failed to convert Currency: %w", err)
+				return result, fmt.Errorf("failed to convert Currency: %w", err)
 			}
 		}
 
@@ -74,8 +80,11 @@ func (h *HotelServiceImpl) SearchHotels(serviceParams dto.HotelSearchServicePara
 			Price:    price,
 		}
 
-		res = append(res, hotelRes)
+		result.HotelPrices = append(result.HotelPrices, hotelRes)
 	}
 
-	return res, nil
+	result.SupplierResponse = string(byteResponse)
+	result.SupplierRequest = string(byteRequest)
+
+	return result, nil
 }

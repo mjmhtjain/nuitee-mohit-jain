@@ -23,6 +23,7 @@ type HotelSearchServiceParams struct {
 type HotelSearchServiceResponse struct {
 	HotelPrices      []HotelPrice
 	SupplierResponse string
+	SupplierRequest  string
 }
 
 // HotelPriceResponse represents the top-level response structure
