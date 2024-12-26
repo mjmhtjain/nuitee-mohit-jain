@@ -2,7 +2,6 @@ package service
 
 import (
 	"fmt"
-	"strconv"
 
 	"github.com/mjmhtjain/nuitee-mohit-jain/cmd/internals/client"
 	"github.com/mjmhtjain/nuitee-mohit-jain/cmd/internals/dto"
@@ -13,12 +12,14 @@ type HotelService interface {
 }
 
 type HotelServiceImpl struct {
-	client client.HotelBedsClient
+	client      client.HotelBedsClient
+	currService CurrencyService
 }
 
 func NewHotelService() HotelService {
 	return &HotelServiceImpl{
-		client: client.NewHotelBedsClient(),
+		client:      client.NewHotelBedsClient(),
+		currService: NewCurrencyService(),
 	}
 }
 
@@ -41,16 +42,25 @@ func (h *HotelServiceImpl) SearchHotels(serviceParams dto.HotelSearchServicePara
 		return nil, err
 	}
 
-	for _, h := range response.Hotels.Hotels {
-		minRate, err := strconv.ParseFloat(h.MinRate, 64)
+	for _, hotel := range response.Hotels.Hotels {
+		var price float64 = 0.0
+
+		price, err = hotel.GetPrice()
 		if err != nil {
-			return nil, fmt.Errorf("failed to parse MinRate: %w", err)
+			return nil, fmt.Errorf("failed to get Price for Hotel: %v", hotel.Code)
+		}
+
+		if hotel.Currency != serviceParams.Currency {
+			price, err = h.currService.Convert(price, hotel.Currency, serviceParams.Currency)
+			if err != nil {
+				return nil, fmt.Errorf("failed to convert Currency: %w", err)
+			}
 		}
 
 		hotelRes := dto.HotelPrice{
-			HotelID:  fmt.Sprint(h.Code),
-			Currency: h.Currency,
-			Price:    minRate,
+			HotelID:  hotel.GetStringifiedHotelCode(),
+			Currency: serviceParams.Currency,
+			Price:    price,
 		}
 
 		res = append(res, hotelRes)

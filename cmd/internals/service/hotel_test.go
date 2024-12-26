@@ -43,21 +43,37 @@ func (m *mockHotelBedsClient) SearchHotels(request *dto.HotelBedsSearchRequest) 
 	}, nil
 }
 
+type mockCurrencyService struct {
+	shouldError bool
+}
+
+func (c *mockCurrencyService) Convert(amount float64, sourceCurr, targetCurr string) (float64, error) {
+	if c.shouldError {
+		return amount, fmt.Errorf("Conversion error")
+	}
+
+	return amount, nil
+}
+
 func TestSearchHotels(t *testing.T) {
 	tests := []struct {
 		name          string
 		client        client.HotelBedsClient
+		currService   CurrencyService
 		params        dto.HotelSearchServiceParams
 		expectedError string
 		expectedLen   int
+		expectedCurr  string
 	}{
 		{
-			name:   "Success case",
-			client: &mockHotelBedsClient{},
+			name:        "Success case",
+			client:      &mockHotelBedsClient{},
+			currService: &mockCurrencyService{},
 			params: dto.HotelSearchServiceParams{
 				CheckIn:  "2024-12-25",
 				CheckOut: "2024-12-26",
 				HotelIDs: []int{1234, 5678},
+				Currency: "EUR",
 				Occupancies: []dto.Occupancy{
 					{
 						Rooms:    1,
@@ -66,15 +82,18 @@ func TestSearchHotels(t *testing.T) {
 					},
 				},
 			},
-			expectedLen: 2,
+			expectedLen:  2,
+			expectedCurr: "EUR",
 		},
 		{
-			name:   "Client error",
-			client: &mockHotelBedsClient{shouldError: true},
+			name:        "Client error",
+			currService: &mockCurrencyService{},
+			client:      &mockHotelBedsClient{shouldError: true},
 			params: dto.HotelSearchServiceParams{
 				CheckIn:  "2024-12-25",
 				CheckOut: "2024-12-26",
 				HotelIDs: []int{1234},
+				Currency: "EUR",
 				Occupancies: []dto.Occupancy{
 					{
 						Rooms:    1,
@@ -84,14 +103,17 @@ func TestSearchHotels(t *testing.T) {
 				},
 			},
 			expectedError: "client error",
+			expectedCurr:  "EUR",
 		},
 		{
-			name:   "Invalid rate parsing",
-			client: &mockHotelBedsClient{invalidRate: true},
+			name:        "Invalid rate parsing",
+			client:      &mockHotelBedsClient{invalidRate: true},
+			currService: &mockCurrencyService{},
 			params: dto.HotelSearchServiceParams{
 				CheckIn:  "2024-12-25",
 				CheckOut: "2024-12-26",
 				HotelIDs: []int{1234},
+				Currency: "EUR",
 				Occupancies: []dto.Occupancy{
 					{
 						Rooms:    1,
@@ -100,17 +122,58 @@ func TestSearchHotels(t *testing.T) {
 					},
 				},
 			},
-			expectedError: "failed to parse MinRate",
+			expectedError: "failed to get Price for Hotel: 1234",
+			expectedCurr:  "EUR",
+		},
+		{
+			name:        "Different Currency from ServiceParams",
+			client:      &mockHotelBedsClient{},
+			currService: &mockCurrencyService{},
+			params: dto.HotelSearchServiceParams{
+				CheckIn:  "2024-12-25",
+				CheckOut: "2024-12-26",
+				HotelIDs: []int{1234, 5678},
+				Currency: "USD",
+				Occupancies: []dto.Occupancy{
+					{
+						Rooms:    1,
+						Adults:   2,
+						Children: 1,
+					},
+				},
+			},
+			expectedLen:  2,
+			expectedCurr: "USD",
+		},
+		{
+			name:        "Bad Currency from ServiceParams",
+			client:      &mockHotelBedsClient{},
+			currService: &mockCurrencyService{shouldError: true},
+			params: dto.HotelSearchServiceParams{
+				CheckIn:  "2024-12-25",
+				CheckOut: "2024-12-26",
+				HotelIDs: []int{1234, 5678},
+				Currency: "asd",
+				Occupancies: []dto.Occupancy{
+					{
+						Rooms:    1,
+						Adults:   2,
+						Children: 1,
+					},
+				},
+			},
+			expectedError: "failed to convert Currency: Conversion error",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			service := &HotelServiceImpl{
-				client: tt.client,
+			hotelService := &HotelServiceImpl{
+				client:      tt.client,
+				currService: tt.currService,
 			}
 
-			result, err := service.SearchHotels(tt.params)
+			result, err := hotelService.SearchHotels(tt.params)
 
 			if tt.expectedError != "" {
 				assert.Error(t, err)
@@ -121,7 +184,7 @@ func TestSearchHotels(t *testing.T) {
 				assert.Equal(t, tt.expectedLen, len(result))
 				if len(result) > 0 {
 					assert.Equal(t, "1234", result[0].HotelID)
-					assert.Equal(t, "EUR", result[0].Currency)
+					assert.Equal(t, tt.expectedCurr, result[0].Currency)
 					assert.Equal(t, 199.99, result[0].Price)
 				}
 			}
