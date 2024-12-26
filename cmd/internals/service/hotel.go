@@ -1,6 +1,7 @@
 package service
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"github.com/mjmhtjain/nuitee-mohit-jain/cmd/internals/client"
@@ -25,6 +26,7 @@ func NewHotelService() HotelService {
 
 func (h *HotelServiceImpl) SearchHotels(serviceParams dto.HotelSearchServiceParams) ([]dto.HotelPrice, error) {
 	res := []dto.HotelPrice{}
+
 	//create request
 	request := dto.HotelBedsSearchRequest{
 		Stay: dto.Stay{
@@ -37,11 +39,20 @@ func (h *HotelServiceImpl) SearchHotels(serviceParams dto.HotelSearchServicePara
 		},
 	}
 
-	response, err := h.client.SearchHotels(&request)
+	// get response from client
+	stringResponse, err := h.client.SearchHotels(&request)
 	if err != nil {
 		return nil, err
 	}
 
+	// unmarshal response
+	response := dto.HotelbedsResponse{}
+	err = json.Unmarshal([]byte(*stringResponse), &response)
+	if err != nil {
+		return nil, fmt.Errorf("failed to unmarshal response: %w", err)
+	}
+
+	// get price for each hotel
 	for _, hotel := range response.Hotels.Hotels {
 		var price float64 = 0.0
 

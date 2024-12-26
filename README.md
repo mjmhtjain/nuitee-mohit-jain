@@ -74,5 +74,4 @@ This project implements an API using the Gin framework in Golang that serves as 
 
 ## TODO
 - Add Supplier details
-- Add currency conversions
 

@@ -19,6 +19,12 @@ type HotelSearchServiceParams struct {
 	Occupancies []Occupancy
 }
 
+// HotelSearchServiceResponse represents the response for HotelSearch Service
+type HotelSearchServiceResponse struct {
+	HotelPrices      []HotelPrice
+	SupplierResponse string
+}
+
 // HotelPriceResponse represents the top-level response structure
 type HotelPriceResponse struct {
 	Data     []HotelPrice `json:"data"`
