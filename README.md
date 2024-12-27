@@ -64,16 +64,12 @@ This project implements an API using the Gin framework in Golang that serves as 
 ## Repository Structure
 ```
 .
-├── .env                    # Environment configuration
 ├── .gitignore             # Git ignore rules
 ├── README.md              # Project documentation
 ├── Makefile               # Build and development commands
 ├── go.mod                 # Go module definition
 ├── go.sum                 # Go module checksums
 ├── main.go                # Application entry point
-├── main_test.go           # Main package tests
-├── scripts/               # Utility scripts
-├── .vscode/               # VSCode configuration
 └── cmd/                   # Application source code
     └── internals/         # Internal packages
         ├── handler/       # HTTP request handlers
