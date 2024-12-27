@@ -9,14 +9,14 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/mjmhtjain/nuitee-mohit-jain/cmd/internals/handler/mockService"
+	"github.com/mjmhtjain/nuitee-mohit-jain/cmd/internals/handler/mocks"
 	"github.com/stretchr/testify/assert"
 )
 
 func setupRouter() *gin.Engine {
 	gin.SetMode(gin.TestMode)
 	router := gin.New()
-	mockService := &mockService.MockHotelService{}
+	mockService := &mocks.MockHotelService{}
 	hotelsHandler := NewHotelsHandlerWithService(mockService)
 	router.GET("/hotels/search", hotelsHandler.SearchHotels())
 	return router
