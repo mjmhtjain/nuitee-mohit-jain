@@ -37,20 +37,29 @@ This project implements an API using the Gin framework in Golang that serves as 
 
 3. Install dependencies:
    ```bash
-   go mod tidy
+   make deps
    ```
 
 4. Run tests:
    ```bash
-   go test ./...
+   make test
    ```
 
-5. Run the application:
+5. Build and run the application:
    ```bash
-   go run main.go
+   # Build only
+   make build
+
+   # Build and run
+   make run
    ```
 
    The API will be available at `http://localhost:8080` (or your configured PORT)
+
+6. Clean up build artifacts:
+   ```bash
+   make clean
+   ```
 
 ## Repository Structure
 ```
@@ -58,19 +67,19 @@ This project implements an API using the Gin framework in Golang that serves as 
 ├── .env                    # Environment configuration
 ├── .gitignore             # Git ignore rules
 ├── README.md              # Project documentation
+├── Makefile               # Build and development commands
 ├── go.mod                 # Go module definition
 ├── go.sum                 # Go module checksums
 ├── main.go                # Application entry point
-├── main_test.go          # Main package tests
-├── scripts/              # Utility scripts
-└── cmd/                  # Application source code
-    └── internals/        # Internal packages
-        ├── handler/      # HTTP request handlers
-        ├── service/      # Business logic layer
-        ├── dto/          # Data transfer objects
-        ├── client/       # External API clients
-        └── router/       # Route definitions
+├── main_test.go           # Main package tests
+├── scripts/               # Utility scripts
+├── .vscode/               # VSCode configuration
+└── cmd/                   # Application source code
+    └── internals/         # Internal packages
+        ├── handler/       # HTTP request handlers
+        ├── service/       # Business logic layer
+        ├── dto/           # Data transfer objects
+        ├── client/        # External API clients
+        ├── util/          # Utility functions
+        └── router/        # Route definitions
 ```
-
-## TODO
-
