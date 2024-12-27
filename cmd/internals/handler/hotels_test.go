@@ -9,14 +9,14 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/mjmhtjain/nuitee-mohit-jain/cmd/internals/dto"
+	"github.com/mjmhtjain/nuitee-mohit-jain/cmd/internals/handler/mocks"
 	"github.com/stretchr/testify/assert"
 )
 
 func setupRouter() *gin.Engine {
 	gin.SetMode(gin.TestMode)
 	router := gin.New()
-	mockService := &mockHotelService{}
+	mockService := &mocks.MockHotelService{}
 	hotelsHandler := NewHotelsHandlerWithService(mockService)
 	router.GET("/hotels/search", hotelsHandler.SearchHotels())
 	return router
@@ -129,26 +129,4 @@ func TestSearchHotels(t *testing.T) {
 			}
 		})
 	}
-}
-
-// Mock hotel service for testing
-type mockHotelService struct{}
-
-func (m *mockHotelService) SearchHotels(params dto.HotelSearchServiceParams) ([]dto.HotelPrice, error) {
-	// Return error for specific hotel ID
-	if params.HotelIDs[0] == 9999 {
-		return nil, fmt.Errorf("service error")
-	}
-
-	if params.HotelIDs[0] == 1234 {
-		return []dto.HotelPrice{
-			{
-				HotelID:  "1234",
-				Currency: "EUR",
-				Price:    199.99,
-			},
-		}, nil
-	}
-
-	return nil, nil
 }

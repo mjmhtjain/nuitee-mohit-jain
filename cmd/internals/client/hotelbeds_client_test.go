@@ -77,15 +77,23 @@ func TestSearchHotels(t *testing.T) {
 		},
 	}
 
-	response, err := client.SearchHotels(request)
+	requestBytes, err := json.Marshal(request)
+	assert.NoError(t, err)
+
+	response, err := client.SearchHotels(requestBytes)
 	assert.NoError(t, err)
 	assert.NotNil(t, response)
-	assert.Len(t, response.Hotels.Hotels, 1)
-	assert.Equal(t, 123, response.Hotels.Hotels[0].Code)
-	assert.Equal(t, "Test Hotel", response.Hotels.Hotels[0].Name)
-	assert.Equal(t, "100.00", response.Hotels.Hotels[0].MinRate)
-	assert.Equal(t, "200.00", response.Hotels.Hotels[0].MaxRate)
-	assert.Equal(t, "EUR", response.Hotels.Hotels[0].Currency)
+
+	responseData := dto.HotelbedsResponse{}
+	err = json.Unmarshal(response, &responseData)
+	assert.NoError(t, err)
+
+	assert.Len(t, responseData.Hotels.Hotels, 1)
+	assert.Equal(t, 123, responseData.Hotels.Hotels[0].Code)
+	assert.Equal(t, "Test Hotel", responseData.Hotels.Hotels[0].Name)
+	assert.Equal(t, "100.00", responseData.Hotels.Hotels[0].MinRate)
+	assert.Equal(t, "200.00", responseData.Hotels.Hotels[0].MaxRate)
+	assert.Equal(t, "EUR", responseData.Hotels.Hotels[0].Currency)
 }
 
 func TestSearchHotels_Error(t *testing.T) {
@@ -102,14 +110,15 @@ func TestSearchHotels_Error(t *testing.T) {
 
 	client := NewHotelBedsClient()
 
-	request := &dto.HotelBedsSearchRequest{
+	requestBytes, err := json.Marshal(&dto.HotelBedsSearchRequest{
 		Stay: dto.Stay{
 			CheckIn:  "2024-01-01",
 			CheckOut: "2024-01-05",
 		},
-	}
+	})
+	assert.NoError(t, err)
 
-	response, err := client.SearchHotels(request)
+	response, err := client.SearchHotels(requestBytes)
 	assert.Error(t, err)
 	assert.Nil(t, response)
 	assert.Contains(t, err.Error(), "API returned non-200 status code")

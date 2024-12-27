@@ -5,19 +5,17 @@ import (
 	"compress/gzip"
 	"crypto/sha256"
 	"encoding/hex"
-	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"os"
 	"time"
 
-	"github.com/mjmhtjain/nuitee-mohit-jain/cmd/internals/dto"
 	"github.com/mjmhtjain/nuitee-mohit-jain/cmd/internals/util"
 )
 
 type HotelBedsClient interface {
-	SearchHotels(request *dto.HotelBedsSearchRequest) (*dto.HotelbedsResponse, error)
+	SearchHotels(request []byte) ([]byte, error)
 }
 
 type HotelBedsClientImpl struct {
@@ -38,56 +36,52 @@ func NewHotelBedsClient() HotelBedsClient {
 	}
 }
 
-func (c *HotelBedsClientImpl) SearchHotels(reqData *dto.HotelBedsSearchRequest) (*dto.HotelbedsResponse, error) {
+func (c *HotelBedsClientImpl) SearchHotels(request []byte) (response []byte, err error) {
+
 	// Create the request URL with the base URL
 	url := fmt.Sprintf("%s/hotel-api/1.0/hotels", c.baseURL)
 
-	// Convert request to JSON
-	jsonData, err := json.Marshal(reqData)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal request: %w", err)
-	}
-
 	// Create new POST request with the JSON body
-	req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(jsonData))
+	req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(request))
 	if err != nil {
-		return nil, fmt.Errorf("failed to create request: %w", err)
+		return response, fmt.Errorf("failed to create request: %w", err)
 	}
 
 	// Set headers
 	err = c.setHeaders(req)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create request: %w", err)
+		return response, fmt.Errorf("failed to create request: %w", err)
 	}
 
 	// Make the request
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("failed to make API request: %w", err)
+		return response, fmt.Errorf("failed to make API request: %w", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("API returned non-200 status code: %d", resp.StatusCode)
+		return response, fmt.Errorf("API returned non-200 status code: %d", resp.StatusCode)
 	}
 
 	var reader io.ReadCloser
 	if resp.Header.Get("Content-Encoding") == "gzip" {
 		reader, err = gzip.NewReader(resp.Body)
 		if err != nil {
-			return nil, fmt.Errorf("failed to create gzip reader: %w", err)
+			return response, fmt.Errorf("failed to create gzip reader: %w", err)
 		}
 		defer reader.Close()
 	} else {
 		reader = resp.Body
 	}
 
-	var hotels dto.HotelbedsResponse
-	if err := json.NewDecoder(reader).Decode(&hotels); err != nil {
-		return nil, fmt.Errorf("failed to decode response: %w", err)
+	// Read the response body into a string
+	response, err = io.ReadAll(reader)
+	if err != nil {
+		return response, fmt.Errorf("failed to read response body: %w", err)
 	}
 
-	return &hotels, nil
+	return response, nil
 }
 
 func (c *HotelBedsClientImpl) setHeaders(req *http.Request) error {

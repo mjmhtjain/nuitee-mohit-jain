@@ -151,8 +151,11 @@ func (h *HotelsHandler) handle(c *gin.Context) {
 	}
 
 	response := dto.HotelPriceResponse{
-		Data:     serviceResponse,
-		Supplier: dto.Supplier{},
+		Data: serviceResponse.HotelPrices,
+		Supplier: dto.Supplier{
+			Request:  serviceResponse.SupplierRequest,
+			Response: serviceResponse.SupplierResponse,
+		},
 	}
 
 	// return response
