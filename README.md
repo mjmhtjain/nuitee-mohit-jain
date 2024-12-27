@@ -55,14 +55,11 @@ This project implements an API using the Gin framework in Golang that serves as 
 ## Repository Structure
 ```
 .
-├── .env                    # Environment configuration
 ├── .gitignore             # Git ignore rules
 ├── README.md              # Project documentation
 ├── go.mod                 # Go module definition
 ├── go.sum                 # Go module checksums
 ├── main.go                # Application entry point
-├── main_test.go          # Main package tests
-├── scripts/              # Utility scripts
 └── cmd/                  # Application source code
     └── internals/        # Internal packages
         ├── handler/      # HTTP request handlers
@@ -71,6 +68,3 @@ This project implements an API using the Gin framework in Golang that serves as 
         ├── client/       # External API clients
         └── router/       # Route definitions
 ```
-
-## TODO
-
